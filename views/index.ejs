@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Financeiro Avançado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --text-dark: #e2e8f0;
+            --card-dark: #1E1E1E;
+            --input-dark: #334155;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .card {
+            background-color: var(--card-dark);
+            transition: all 0.3s ease;
+        }
+
+        input, select {
+            background-color: var(--input-dark);
+            color: var(--text-dark);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-receita { border-color: var(--success-color); }
+        .card-despesa { border-color: var(--danger-color); }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .message-card {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: fadeInOut 5s forwards;
+        }
+
+        .loading-bar {
+            width: 0;
+            height: 4px;
+            background-color: #4CAF50;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            animation: loading 5s linear;
+        }
+
+        @keyframes loading {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+
+        .btn-hover:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px);
+        }
+
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-gradient bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">
+                <i class="fas fa-chart-line mr-2"></i>Sistema Financeiro Avançado
+            </h1>
+            <p class="text-lg text-gray-400">Gerencie suas finanças com eficiência e precisão</p>
+        </header>
+
+        <!-- Mensagens de Erro/Sucesso -->
+        <% if (locals.erro) { %>
+            <div id="erroMessage" class="message-card bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r shadow-md">
+                <p class="font-bold">Erro</p>
+                <p><%= erro %></p>
+                <div class="loading-bar"></div>
+            </div>
+        <% } %>
+
+        <% if (locals.sucesso) { %>
+            <div id="sucessoMessage" class="message-card bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-r shadow-md">
+                <p class="font-bold">Sucesso</p>
+                <p><%= sucesso %></p>
+                <div class="loading-bar"></div>
+            </div>
+        <% } %>
+
+        <!-- Botões de Ação -->
+        <div class="flex flex-wrap justify-center gap-4 mb-10">
+            <button onclick="openModal('adicionarModal')" class="btn-hover bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg transition duration-300 ease-in-out flex items-center">
+                <i class="fas fa-plus mr-2"></i>Adicionar Lançamento
+            </button>
+        
+            <a href="/relatorio" class="btn-hover bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg shadow-lg transition duration-300 ease-in-out flex items-center">
+                <i class="fas fa-file-alt mr-2"></i>Relatório Geral
+            </a>
+        </div>
+
+        <!-- Resumo Financeiro -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-200">
+                <i class="fas fa-chart-pie mr-2"></i>Resumo Financeiro
+            </h2>
+            <% 
+            let totalReceitas = 0;
+            let totalDespesas = 0;
+            financas.forEach(function(financa) {
+                if (financa.tipo === 'receita') {
+                    totalReceitas += financa.valor;
+                } else {
+                    totalDespesas += financa.valor;
+                }
+            });
+            let saldoTotal = totalReceitas - totalDespesas;
+            %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-xl p-6 text-center">
+                    <h3 class="text-xl font-semibold mb-2 text-white">
+                        <i class="fas fa-arrow-up mr-2"></i>Total de Receitas
+                    </h3>
+                    <p class="text-3xl font-bold text-white">R$ <%= totalReceitas.toFixed(2) %></p>
+                </div>
+                <div class="card bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-xl p-6 text-center">
+                    <h3 class="text-xl font-semibold mb-2 text-white">
+                        <i class="fas fa-arrow-down mr-2"></i>Total de Despesas
+                    </h3>
+                    <p class="text-3xl font-bold text-white">R$ <%= totalDespesas.toFixed(2) %></p>
+                </div>
+                <div class="card bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-xl p-6 text-center">
+                    <h3 class="text-xl font-semibold mb-2 text-white">
+                        <i class="fas fa-balance-scale mr-2"></i>Saldo Total
+                    </h3>
+                    <p class="text-3xl font-bold text-white">R$ <%= saldoTotal.toFixed(2) %></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Lançamentos -->
+        <section>
+            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-200">
+                <i class="fas fa-list-ul mr-2"></i>Lançamentos
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% financas.forEach(function(financa) { %>
+                    <div class="card <%= financa.tipo === 'receita' ? 'card-receita' : 'card-despesa' %> rounded-xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl"
+                         onclick="openModal('visualizarModal<%= financa.id %>')">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2 flex items-center">
+                                <i class="<%= financa.tipo === 'receita' ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500' %> mr-2"></i>
+                                <%= financa.descricao %>
+                            </h3>
+                            <p class="text-2xl font-bold <%= financa.tipo === 'receita' ? 'text-green-400' : 'text-red-400' %>">
+                                R$ <%= financa.valor.toFixed(2) %>
+                            </p>
+                            <p class="text-sm text-gray-400 mt-2">
+                                <i class="far fa-calendar-alt mr-1"></i> <%= new Date(financa.data).toLocaleDateString() %>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Visualização -->
+                    <div id="visualizarModal<%= financa.id %>" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                        <div class="modal-content bg-[#1E1E1E] rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+                            <h2 class="text-2xl font-bold mb-6 text-gray-200">Detalhes do Lançamento</h2>
+                            <div class="space-y-4">
+                                <p class="text-gray-300"><i class="fas fa-file-alt mr-2"></i><strong>Descrição:</strong> <%= financa.descricao %></p>
+                                <p class="text-gray-300"><i class="fas fa-dollar-sign mr-2"></i><strong>Valor:</strong> R$ <%= financa.valor.toFixed(2) %></p>
+                                <p class="text-gray-300"><i class="fas fa-tag mr-2"></i><strong>Categoria:</strong> <%= financa.categoria.charAt(0).toUpperCase() + financa.categoria.slice(1).replace('_', ' ') %></p>
+                                <p class="text-gray-300"><i class="fas fa-exchange-alt mr-2"></i><strong>Tipo:</strong> <%= financa.tipo.charAt(0).toUpperCase() + financa.tipo.slice(1) %></p>
+                                <p class="text-gray-300"><i class="far fa-calendar-alt mr-2"></i><strong>Data:</strong> <%= new Date(financa.data).toLocaleDateString() %></p>
+                            </div>
+                            <div class="mt-8 flex justify-between">
+                                <button onclick="openModal('atualizarModal<%= financa.id %>')" class="btn-hover bg-yellow-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">
+                                    <i class="fas fa-edit mr-1"></i>Editar
+                                </button>
+                                <button onclick="openModal('deletarModal<%= financa.id %>')" class="btn-hover bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">
+                                    <i class="fas fa-trash-alt mr-1"></i>Deletar
+                                </button>
+                                <button onclick="closeModal('visualizarModal<%= financa.id %>')" class="btn-hover bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition duration-300 ease-in-out">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Edição -->
+                    <div id="atualizarModal<%= financa.id %>" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                        <div class="modal-content bg-[#1E1E1E] rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+                            <h2 class="text-2xl font-bold mb-6 text-gray-200">Editar Lançamento</h2>
+                            <form action="/atualizar/<%= financa.id %>" method="POST" class="space-y-6">
+                                <div>
+                                    <label for="descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição</label>
+                                    <input type="text" id="descricao" name="descricao" value="<%= financa.descricao %>" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                </div>
+                                <div>
+                                    <label for="valor" class="block text-sm font-medium text-gray-300 mb-1">Valor</label>
+                                    <input type="number" id="valor" name="valor" value="<%= financa.valor %>" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white" inputmode="decimal">
+                                </div>
+                                <div>
+                                    <label for="categoria" class="block text-sm font-medium text-gray-300 mb-1">Categoria</label>
+                                    <select id="categoria" name="categoria" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                        <option value="alimentacao" <%= financa.categoria === 'alimentacao' ? 'selected' : '' %>>Alimentação</option>
+                                        <option value="transporte" <%= financa.categoria === 'transporte' ? 'selected' : '' %>>Transporte</option>
+                                        <option value="lazer" <%= financa.categoria === 'lazer' ? 'selected' : '' %>>Lazer</option>
+                                        <option value="salario" <%= financa.categoria === 'salario' ? 'selected' : '' %>>Salário</option>
+                                        <option value="cartao de credito" <%= financa.categoria === 'cartao de credito' ? 'selected' : '' %>>Cartão de Crédito</option>
+                                        <option value="moradia" <%= financa.categoria === 'moradia' ? 'selected' : '' %>>Moradia</option>
+                                        <option value="saude" <%= financa.categoria === 'saude' ? 'selected' : '' %>>Saúde</option>
+                                        <option value="educacao" <%= financa.categoria === 'educacao' ? 'selected' : '' %>>Educação</option>
+                                        <option value="investimentos" <%= financa.categoria === 'investimentos' ? 'selected' : '' %>>Investimentos</option>
+                                        <option value="outros" <%= financa.categoria === 'outros' ? 'selected' : '' %>>Outros</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="tipo" class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+                                    <select id="tipo" name="tipo" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                        <option value="receita" <%= financa.tipo === 'receita' ? 'selected' : '' %>>Receita</option>
+                                        <option value="despesa" <%= financa.tipo === 'despesa' ? 'selected' : '' %>>Despesa</option>
+                                    </select>
+                                </div>
+                                <div class="flex justify-end space-x-3">
+                                    <button type="button" onclick="closeModal('atualizarModal<%= financa.id %>')" class="btn-hover bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition duration-300 ease-in-out">Cancelar</button>
+                                    <button type="submit" class="btn-hover bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Exclusão -->
+                    <div id="deletarModal<%= financa.id %>" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                        <div class="modal-content bg-[#1E1E1E] rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+                            <h2 class="text-2xl font-bold mb-6 text-gray-200">Confirmar Exclusão</h2>
+                            <p class="mb-6 text-gray-300">Tem certeza que deseja excluir este lançamento?</p>
+                            <div class="flex justify-end space-x-3">
+                                <button onclick="closeModal('deletarModal<%= financa.id %>')" class="btn-hover bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition duration-300 ease-in-out">Cancelar</button>
+                                <a href="/deletar/<%= financa.id %>" class="btn-hover bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>Confirmar Exclusão
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Adicionar -->
+    <div id="adicionarModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="modal-content bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+            <h2 class="text-2xl font-bold mb-6 text-gray-200">Adicionar Lançamento</h2>
+            <form action="/criar" method="POST" class="space-y-6">
+                <div>
+                    <label for="descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição</label>
+                    <input type="text" id="descricao" name="descricao" required class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                </div>
+                <div>
+                    <label for="valor" class="block text-sm font-medium text-gray-300 mb-1">Valor</label>
+                    <input type="number" id="valor" name="valor" step="0.01" required class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white" inputmode="decimal">
+                </div>
+                <div>
+                    <label for="categoria" class="block text-sm font-medium text-gray-300 mb-1">Categoria</label>
+                    <select id="categoria" name="categoria" required class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                        <option value="">Selecione Categoria</option>
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="transporte">Transporte</option>
+                        <option value="lazer">Lazer</option>
+                        <option value="salario">Salário</option>
+                        <option value="cartao de credito">Cartão de Crédito</option>
+                        <option value="moradia">Moradia</option>
+                        <option value="saude">Saúde</option>
+                        <option value="educacao">Educação</option>
+                        <option value="investimentos">Investimentos</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="tipo" class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+                    <select id="tipo" name="tipo" required class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                        <option value="">Tipo</option>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('adicionarModal')" class="btn-hover bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition duration-300 ease-in-out">Cancelar</button>
+                    <button type="submit" class="btn-hover bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Filtro -->
+    <div id="filtroModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="modal-content bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+            <h2 class="text-2xl font-bold mb-6 text-gray-200">Filtrar Lançamentos</h2>
+            <form action="/filtrar" method="GET" class="space-y-6">
+                <div>
+                    <label for="ano" class="block text-sm font-medium text-gray-300 mb-1">Ano</label>
+                    <input type="number" id="ano" name="ano" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                </div>
+                <div>
+                    <label for="mes" class="block text-sm font-medium text-gray-300 mb-1">Mês</label>
+                    <select id="mes" name="mes" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                        <option value="">Selecione o Mês</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="semana" class="block text-sm font-medium text-gray-300 mb-1">Semana</label>
+                    <input type="number" id="semana" name="semana" min="1" max="53" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                </div>
+                <div>
+                    <label for="dia" class="block text-sm font-medium text-gray-300 mb-1">Dia</label>
+                    <input type="number" id="dia" name="dia" min="1" max="31" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                </div>
+                <div>
+                    <label for="tipo" class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+                    <select id="tipo" name="tipo" class="w-full px-4 py-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                        <option value="">Todos</option>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('filtroModal')" class="btn-hover bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition duration-300 ease-in-out">Cancelar</button>
+                    <button type="submit" class="btn-hover bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out">Aplicar Filtro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Configura inputs numéricos para dispositivos móveis
+        const numericInputs = document.querySelectorAll('input[type="number"]');
+        numericInputs.forEach(input => {
+            input.addEventListener('focus', function () {
+                this.type = 'text';
+                this.inputMode = 'decimal';
+            });
+            input.addEventListener('blur', function () {
+                this.type = 'number';
+            });
+        });
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(function () {
+            const messages = document.querySelectorAll('#erroMessage, #sucessoMessage');
+            messages.forEach(function (message) {
+                message.style.display = 'none';
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>
