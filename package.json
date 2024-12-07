@@ -7,11 +7,16 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "keywords": ["finance", "tracking", "nodejs"],
+  "keywords": [
+    "finance",
+    "tracking",
+    "nodejs"
+  ],
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.9",
