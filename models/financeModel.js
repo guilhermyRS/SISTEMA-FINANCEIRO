@@ -1,74 +1,70 @@
+// models/financeModel.js
 const supabase = require('../config/supabaseConfig');
 
 class FinanceModel {
-  static async criar(dados, userId) {
+  static async criar(dados) {
     const { data, error } = await supabase
       .from('financas')
-      .insert({
-        ...dados,
-        user_id: userId
-      });
-
+      .insert(dados);
+    
     if (error) throw error;
     return data;
   }
 
-  static async listar(userId) {
+  static async listar() {
     const { data, error } = await supabase
       .from('financas')
       .select('*')
-      .eq('user_id', userId)
       .order('data', { ascending: false });
-
+    
     if (error) throw error;
     return data;
   }
 
-  // Update other methods similarly to include user_id filtering
-  static async filtrar(dataInicio, dataFim, tipo, categoria, userId) {
-    let query = supabase.from('financas')
-      .select('*')
-      .eq('user_id', userId);
+  // New method for filtering
+  static async filtrar(dataInicio, dataFim, tipo, categoria) {
+    let query = supabase.from('financas').select('*');
 
+    // Add date range filter if provided
     if (dataInicio && dataFim) {
       query = query.gte('data', dataInicio).lte('data', dataFim);
     }
 
+    // Add tipo filter if provided
     if (tipo) {
       query = query.eq('tipo', tipo);
     }
 
+    // Add categoria filter if provided
     if (categoria) {
       query = query.eq('categoria', categoria);
     }
 
+    // Order by date descending
     query = query.order('data', { ascending: false });
 
     const { data, error } = await query;
-
+    
     if (error) throw error;
     return data;
   }
 
-  // Other methods (atualizar, deletar) should be updated similarly
-  static async atualizar(id, dados, userId) {
+  static async atualizar(id, dados) {
     const { data, error } = await supabase
       .from('financas')
       .update(dados)
-      .eq('id', id)
-      .eq('user_id', userId);
-
+      .eq('id', id);
+    
     if (error) throw error;
     return data;
   }
 
-  static async deletar(id, userId) {
+  static async deletar(id) {
     const { data, error } = await supabase
       .from('financas')
       .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
-
+      .eq('id', id);
+    
     if (error) throw error;
     return data;
   }
