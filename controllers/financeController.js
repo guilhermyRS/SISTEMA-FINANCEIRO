@@ -2,21 +2,24 @@
 const FinanceModel = require('../models/financeModel');
 const Papa = require('papaparse');
 
-class FinanceController {static async index(req, res) {
-  try {
-    const financas = await FinanceModel.listar(req.user.id);
-    res.render('index', { 
-      financas, 
-      erro: req.query.erro,
-      sucesso: req.query.sucesso 
-    });
-  } catch (error) {
-    console.error('Erro ao listar lançamentos:', error);
-    res.render('index', { 
-      financas: [], 
-      erro: 'Erro ao listar lançamentos. Por favor, tente novamente.'
-    });
-  }
+class FinanceController {
+
+
+  static async index(req, res) {
+    try {
+      const financas = await FinanceModel.listar(req.user.id);
+      res.render('index', { 
+        financas, 
+        erro: req.query.erro,
+        sucesso: req.query.sucesso 
+      });
+    } catch (error) {
+      console.error('Erro ao listar lançamentos:', error);
+      res.render('index', { 
+        financas: [], 
+        erro: 'Erro ao listar lançamentos. Por favor, tente novamente.'
+      });
+    }
   }
 
   static async criar(req, res) {
@@ -38,10 +41,11 @@ class FinanceController {static async index(req, res) {
         categoria, 
         tipo,
         data: new Date() 
-      }, req.session.user.id);
+      }, req.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento adicionado com sucesso'));
     } catch (error) {
+      console.error('Erro ao adicionar lançamento:', error);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao adicionar lançamento'));
     }
   }
@@ -65,10 +69,11 @@ class FinanceController {static async index(req, res) {
         valor: valorNumerico, 
         categoria, 
         tipo 
-      }, req.session.user.id);
+      }, req.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento atualizado com sucesso'));
     } catch (error) {
+      console.error('Erro ao atualizar lançamento:', error);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao atualizar lançamento'));
     }
   }
@@ -76,10 +81,11 @@ class FinanceController {static async index(req, res) {
   static async deletar(req, res) {
     try {
       const { id } = req.params;
-      await FinanceModel.deletar(id, req.session.user.id);
+      await FinanceModel.deletar(id, req.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento removido com sucesso'));
     } catch (error) {
+      console.error('Erro ao remover lançamento:', error);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao remover lançamento'));
     }
   }
@@ -87,24 +93,24 @@ class FinanceController {static async index(req, res) {
   static async dashboard(req, res) {
     try {
       const financas = await FinanceModel.listar(req.session.user.id);
-      
+
       const totalReceitas = financas
         .filter(f => f.tipo === 'receita')
         .reduce((sum, f) => sum + f.valor, 0);
-      
+
       const totalDespesas = financas
         .filter(f => f.tipo === 'despesa')
         .reduce((sum, f) => sum + f.valor, 0);
-      
+
       const saldoTotal = totalReceitas - totalDespesas;
 
-      res.render('dashboard', { 
-        financas, 
-        totalReceitas, 
-        totalDespesas, 
+      res.render('dashboard', {
+        financas,
+        totalReceitas,
+        totalDespesas,
         saldoTotal,
         erro: req.query.erro,
-        sucesso: req.query.sucesso 
+        sucesso: req.query.sucesso
       });
     } catch (error) {
       res.redirect('/?erro=' + encodeURIComponent('Erro ao carregar dashboard'));
@@ -115,8 +121,8 @@ class FinanceController {static async index(req, res) {
     try {
       const { dataInicio, dataFim, tipo, categoria } = req.body;
       const financasFiltradas = await FinanceModel.filtrar(req.session.user.id, dataInicio, dataFim, tipo, categoria);
-      
-      res.render('dashboard', { 
+
+      res.render('dashboard', {
         financas: financasFiltradas,
         filtros: { dataInicio, dataFim, tipo, categoria }
       });
@@ -128,7 +134,7 @@ class FinanceController {static async index(req, res) {
   static async exportar(req, res) {
     try {
       const financas = await FinanceModel.listar(req.session.user.id);
-      
+
       const csvData = financas.map(f => ({
         ID: f.id,
         Descrição: f.descricao,

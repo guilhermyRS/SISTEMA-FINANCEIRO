@@ -16,13 +16,13 @@ const isAuthenticated = async (req, res, next) => {
     }
 
     if (!user) {
-      // Se não houver usuário, limpe o token e redirecione para o login
       res.clearCookie('supabase-auth-token');
       req.session.destroy();
       return res.redirect('/login');
     }
 
     req.user = user;
+    console.log('Usuário autenticado:', user.id);
     next();
   } catch (error) {
     console.error('Erro de autenticação:', error);
