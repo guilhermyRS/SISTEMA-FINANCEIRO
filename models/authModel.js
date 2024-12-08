@@ -1,4 +1,3 @@
-// models/authModel.js
 const supabase = require('../config/supabaseConfig');
 
 class AuthModel {

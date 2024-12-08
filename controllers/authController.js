@@ -6,29 +6,55 @@ class AuthController {
     try {
       const { email, password } = req.body;
       const { user, session } = await AuthModel.login(email, password);
-      req.session.user = user;
-      res.redirect('/');
+      
+      if (user && session) {
+        req.session.token = session.access_token;
+        req.session.user = user;
+        
+        res.cookie('supabase-auth-token', session.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
+        });
+        
+        return res.redirect('/');
+      } else {
+        throw new Error('Falha na autenticação');
+      }
     } catch (error) {
-      res.render('login', { error: 'Credenciais inválidas' });
+      console.error('Erro de login:', error);
+      res.render('login', { error: error.message || 'Credenciais inválidas' });
     }
   }
 
   static async cadastrar(req, res) {
     try {
       const { email, password } = req.body;
-      await AuthModel.cadastrar(email, password);
-      res.render('login', { success: 'Cadastro realizado com sucesso. Por favor, verifique seu email e faça o ligin.' });
+      const { user, session } = await AuthModel.cadastrar(email, password);
+      
+      if (user) {
+        res.render('login', { success: 'Cadastro realizado com sucesso. Por favor, faça login.' });
+      } else {
+        throw new Error('Falha no cadastro');
+      }
     } catch (error) {
-      res.render('cadastro', { error: 'Erro ao cadastrar. Tente novamente.' });
+      console.error('Erro de cadastro:', error);
+      res.render('cadastro', { error: error.message || 'Erro ao cadastrar. Tente novamente.' });
     }
   }
 
   static async logout(req, res) {
     try {
       await AuthModel.logout();
-      req.session.destroy();
-      res.redirect('/login');
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Erro ao destruir sessão:', err);
+        }
+        res.clearCookie('supabase-auth-token');
+        res.redirect('/login');
+      });
     } catch (error) {
+      console.error('Erro de logout:', error);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao fazer logout'));
     }
   }

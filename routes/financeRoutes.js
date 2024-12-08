@@ -3,15 +3,7 @@ const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/authController');
 const FinanceController = require('../controllers/financeController');
-
-// Middleware to check if user is authenticated
-const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
-};
+const { isAuthenticated } = require('../middlewares/auth');
 
 // Auth routes
 router.get('/login', AuthController.renderLogin);
