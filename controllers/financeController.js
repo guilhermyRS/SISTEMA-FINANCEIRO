@@ -5,7 +5,7 @@ const Papa = require('papaparse');
 class FinanceController {
   static async index(req, res) {
     try {
-      const financas = await FinanceModel.listar();
+      const financas = await FinanceModel.listar(req.session.user.id);
       res.render('index', { 
         financas, 
         erro: req.query.erro,
@@ -20,12 +20,10 @@ class FinanceController {
     try {
       const { descricao, valor, categoria, tipo } = req.body;
       
-      // Validações básicas
       if (!descricao || !valor || !categoria || !tipo) {
         return res.redirect('/?erro=' + encodeURIComponent('Preencha todos os campos'));
       }
 
-      // Conversão e validação de valor (agora suporta decimais)
       const valorNumerico = parseFloat(valor.replace(',', '.'));
       if (isNaN(valorNumerico) || valorNumerico <= 0) {
         return res.redirect('/?erro=' + encodeURIComponent('Valor inválido'));
@@ -37,7 +35,7 @@ class FinanceController {
         categoria, 
         tipo,
         data: new Date() 
-      });
+      }, req.session.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento adicionado com sucesso'));
     } catch (error) {
@@ -50,12 +48,10 @@ class FinanceController {
       const { id } = req.params;
       const { descricao, valor, categoria, tipo } = req.body;
       
-      // Validações básicas
       if (!descricao || !valor || !categoria || !tipo) {
         return res.redirect('/?erro=' + encodeURIComponent('Preencha todos os campos'));
       }
 
-      // Conversão e validação de valor (agora suporta decimais)
       const valorNumerico = parseFloat(valor.replace(',', '.'));
       if (isNaN(valorNumerico) || valorNumerico <= 0) {
         return res.redirect('/?erro=' + encodeURIComponent('Valor inválido'));
@@ -66,7 +62,7 @@ class FinanceController {
         valor: valorNumerico, 
         categoria, 
         tipo 
-      });
+      }, req.session.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento atualizado com sucesso'));
     } catch (error) {
@@ -77,7 +73,7 @@ class FinanceController {
   static async deletar(req, res) {
     try {
       const { id } = req.params;
-      await FinanceModel.deletar(id);
+      await FinanceModel.deletar(id, req.session.user.id);
       
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento removido com sucesso'));
     } catch (error) {
@@ -85,12 +81,10 @@ class FinanceController {
     }
   }
 
-  // New method for dashboard
   static async dashboard(req, res) {
     try {
-      const financas = await FinanceModel.listar();
+      const financas = await FinanceModel.listar(req.session.user.id);
       
-      // Calculate summary statistics
       const totalReceitas = financas
         .filter(f => f.tipo === 'receita')
         .reduce((sum, f) => sum + f.valor, 0);
@@ -114,11 +108,10 @@ class FinanceController {
     }
   }
 
-  // New method for filtering
   static async filtrar(req, res) {
     try {
       const { dataInicio, dataFim, tipo, categoria } = req.body;
-      const financasFiltradas = await FinanceModel.filtrar(dataInicio, dataFim, tipo, categoria);
+      const financasFiltradas = await FinanceModel.filtrar(req.session.user.id, dataInicio, dataFim, tipo, categoria);
       
       res.render('dashboard', { 
         financas: financasFiltradas,
@@ -129,12 +122,10 @@ class FinanceController {
     }
   }
 
-  // New method for exporting to CSV
   static async exportar(req, res) {
     try {
-      const financas = await FinanceModel.listar();
+      const financas = await FinanceModel.listar(req.session.user.id);
       
-      // Prepare CSV data
       const csvData = financas.map(f => ({
         ID: f.id,
         Descrição: f.descricao,
@@ -144,10 +135,8 @@ class FinanceController {
         Data: new Date(f.data).toLocaleDateString('pt-BR')
       }));
 
-      // Convert to CSV
       const csv = Papa.unparse(csvData);
 
-      // Set headers for file download
       res.header('Content-Type', 'text/csv');
       res.attachment('relatorio_financeiro.csv');
       res.send(csv);

@@ -2,41 +2,66 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const financeRoutes = require('./routes/financeRoutes');
+const session = require('express-session');
+const routes = require('./routes/financeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurações middleware
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-// Servir arquivos estáticos (se necessário)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rotas
-app.use('/', financeRoutes);
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
 
-// Tratamento de erros 404
+// Routes
+app.use('/', routes);
+
+// Error handling
 app.use((req, res, next) => {
-  res.status(404).render('error', { 
-    message: 'Página não encontrada', 
-    error: { status: 404 } 
-  });
+  res.status(404).render('error', { message: 'Página não encontrada', error: { status: 404 } });
 });
 
-// Tratamento de erros global
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).render('error', { 
-    message: 'Erro interno do servidor', 
-    error: { status: 500 } 
+  res.status(500).render('error', { message: 'Erro interno do servidor', error: { status: 500 } });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
+
+// Ensure all environment variables are set
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY || !process.env.SESSION_SECRET) {
+  console.error('Erro: Variáveis de ambiente necessárias não estão definidas.');
+  process.exit(1);
+}
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM recebido. Encerrando o servidor...');
+  app.close(() => {
+    console.log('Servidor encerrado.');
+    process.exit(0);
   });
 });
 
-// Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Uncaught exception handler
+process.on('uncaughtException', (error) => {
+  console.error('Exceção não tratada:', error);
+  process.exit(1);
+});
+
+// Unhandled rejection handler
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Rejeição não tratada em:', promise, 'razão:', reason);
+  // Application specific logging, throwing an error, or other logic here
 });
