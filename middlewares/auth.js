@@ -11,8 +11,15 @@ const isAuthenticated = async (req, res, next) => {
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
-    if (error || !user) {
-      throw error || new Error('User not found');
+    if (error) {
+      throw error;
+    }
+
+    if (!user) {
+      // Se não houver usuário, limpe o token e redirecione para o login
+      res.clearCookie('supabase-auth-token');
+      req.session.destroy();
+      return res.redirect('/login');
     }
 
     req.user = user;
@@ -20,6 +27,7 @@ const isAuthenticated = async (req, res, next) => {
   } catch (error) {
     console.error('Erro de autenticação:', error);
     res.clearCookie('supabase-auth-token');
+    req.session.destroy();
     res.redirect('/login');
   }
 };

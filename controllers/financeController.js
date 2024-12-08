@@ -2,18 +2,21 @@
 const FinanceModel = require('../models/financeModel');
 const Papa = require('papaparse');
 
-class FinanceController {
-  static async index(req, res) {
-    try {
-      const financas = await FinanceModel.listar(req.session.user.id);
-      res.render('index', { 
-        financas, 
-        erro: req.query.erro,
-        sucesso: req.query.sucesso 
-      });
-    } catch (error) {
-      res.redirect('/?erro=' + encodeURIComponent('Erro ao listar lançamentos'));
-    }
+class FinanceController {static async index(req, res) {
+  try {
+    const financas = await FinanceModel.listar(req.user.id);
+    res.render('index', { 
+      financas, 
+      erro: req.query.erro,
+      sucesso: req.query.sucesso 
+    });
+  } catch (error) {
+    console.error('Erro ao listar lançamentos:', error);
+    res.render('index', { 
+      financas: [], 
+      erro: 'Erro ao listar lançamentos. Por favor, tente novamente.'
+    });
+  }
   }
 
   static async criar(req, res) {

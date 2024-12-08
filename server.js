@@ -31,6 +31,11 @@ app.use(session({
 // Routes
 app.use('/', routes);
 
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Error handling
 app.use((req, res, next) => {
   res.status(404).render('error', { message: 'Página não encontrada', error: { status: 404 } });
