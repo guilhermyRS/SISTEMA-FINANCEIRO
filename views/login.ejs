@@ -1,83 +1,59 @@
-<!-- views/login.ejs -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Gerenciador Financeiro</title>
+    <title>Login - Sistema Financeiro Avançado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        input {
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .success {
-            color: green;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .cadastro-link {
-            text-align: center;
-            margin-top: 1rem;
+        /* Notificação com animação */
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(0); }
+            80% { opacity: 0.8; transform: translateX(20px); }
+            100% { opacity: 0; transform: translateX(50px); }
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <h1>Login</h1>
+<body class="bg-[#121212] text-gray-300 flex justify-center items-center min-h-screen">
+    <div class="relative w-full max-w-md p-8 bg-[#1E1E1E] rounded-lg shadow-2xl">
+        <h1 class="text-2xl font-bold text-center text-gray-100 mb-6">Sistema Financeiro Avançado</h1>
+        
         <% if (locals.error) { %>
-            <p class="error"><%= error %></p>
+            <div class="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-md animate-[fadeOut_3s_ease-out]">
+                <%= error %>
+            </div>
         <% } %>
         <% if (locals.success) { %>
-            <p class="success"><%= success %></p>
+            <div class="absolute top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-md animate-[fadeOut_3s_ease-out]">
+                <%= success %>
+            </div>
         <% } %>
-        <form action="/login" method="POST">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
+
+        <form action="/login" method="POST" class="space-y-5">
+            <input 
+                type="email" 
+                name="email" 
+                placeholder="Digite seu email" 
+                required
+                class="w-full px-4 py-3 bg-[#121212] text-gray-200 placeholder-gray-500 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <input 
+                type="password" 
+                name="password" 
+                placeholder="Digite sua senha" 
+                required
+                class="w-full px-4 py-3 bg-[#121212] text-gray-200 placeholder-gray-500 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <button 
+                type="submit" 
+                class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all">
+                Entrar
+            </button>
         </form>
-        <p class="cadastro-link">Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
+        
+        <p class="text-center mt-4 text-gray-400">
+            Não tem uma conta? <a href="/cadastro" class="text-blue-400 hover:text-blue-500">Cadastre-se</a>
+        </p>
     </div>
 </body>
 </html>
