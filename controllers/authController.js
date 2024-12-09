@@ -1,22 +1,24 @@
 // controllers/authController.js
 const AuthModel = require('../models/authModel');
+const supabase = require('../config/supabaseConfig');
 
 class AuthController {
+
   static async login(req, res) {
     try {
       const { email, password } = req.body;
       const { user, session } = await AuthModel.login(email, password);
-      
+
       if (user && session) {
         req.session.token = session.access_token;
         req.session.user = user;
-        
+
         res.cookie('supabase-auth-token', session.access_token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
         });
-        
+
         return res.redirect('/');
       } else {
         throw new Error('Falha na autenticação');
@@ -29,14 +31,22 @@ class AuthController {
 
   static async cadastrar(req, res) {
     try {
-      const { email, password } = req.body;
-      const { user, session } = await AuthModel.cadastrar(email, password);
-      
-      if (user) {
-        res.render('login', { success: 'Cadastro realizado com sucesso. Por favor, faça login.' });
-      } else {
-        throw new Error('Falha no cadastro');
+      const { name, email, password } = req.body;
+      const { user, session, error } = await AuthModel.cadastrar(name, email, password);
+
+      if (error) {
+        throw error;
       }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { name: name },
+      });
+
+      if (updateError) {
+        throw new Error('Erro ao atualizar o nome no usuário');
+      }
+
+      res.render('login', { success: 'Cadastro realizado com sucesso. Por favor, verifique seu email para autenticação.' });
     } catch (error) {
       console.error('Erro de cadastro:', error);
       res.render('cadastro', { error: error.message || 'Erro ao cadastrar. Tente novamente.' });

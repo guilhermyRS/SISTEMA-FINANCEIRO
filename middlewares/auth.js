@@ -22,6 +22,7 @@ const isAuthenticated = async (req, res, next) => {
     }
 
     req.user = user;
+    res.locals.email = user.email; // Disponibiliza o e-mail para o template EJS
     console.log('Usuário autenticado:', user.id);
     next();
   } catch (error) {

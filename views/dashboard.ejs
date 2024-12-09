@@ -22,7 +22,7 @@
                     }
                 }
             }
-        }
+        };
     </script>
 </head>
 <body class="bg-bgPrimary text-textPrimary font-sans">
@@ -30,31 +30,9 @@
         <!-- Cabeçalho -->
         <div class="bg-bgSecondary rounded-lg shadow-lg p-6 mb-8 flex justify-between items-center">
             <h1 class="text-3xl font-light"><i class="fas fa-chart-line mr-2"></i>Relatório Financeiro</h1>
-            <a href="/" class="bg-accentBlue text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-blue-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+            <a href="/" class="bg-accentGreen text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-green-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
                 <i class="fas fa-home mr-2"></i>Início
             </a>
-        </div>
-
-        <!-- Resumo Financeiro -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-bgSecondary rounded-lg p-6 text-center shadow-lg border border-borderColor">
-                <h2 class="text-textSecondary mb-2"><i class="fas fa-plus-circle mr-2"></i>Total de Receitas</h2>
-                <p class="text-2xl font-semibold text-accentGreen">
-                    R$ <%= typeof totalReceitas !== 'undefined' ? totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00' %>
-                </p>
-            </div>
-            <div class="bg-bgSecondary rounded-lg p-6 text-center shadow-lg border border-borderColor">
-                <h2 class="text-textSecondary mb-2"><i class="fas fa-minus-circle mr-2"></i>Total de Despesas</h2>
-                <p class="text-2xl font-semibold text-accentRed">
-                    R$ <%= typeof totalDespesas !== 'undefined' ? totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00' %>
-                </p>
-            </div>
-            <div class="bg-bgSecondary rounded-lg p-6 text-center shadow-lg border border-borderColor">
-                <h2 class="text-textSecondary mb-2"><i class="fas fa-balance-scale mr-2"></i>Saldo Total</h2>
-                <p class="text-2xl font-semibold <%= typeof saldoTotal !== 'undefined' && saldoTotal >= 0 ? 'text-accentBlue' : 'text-accentRed' %>">
-                    R$ <%= typeof saldoTotal !== 'undefined' ? saldoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00' %>
-                </p>
-            </div>
         </div>
 
         <!-- Filtros -->
@@ -97,44 +75,33 @@
             </form>
         </div>
 
-        <!-- Tabela de Lançamentos -->
-        <div class="bg-bgSecondary rounded-lg shadow-lg overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-opacity-5 bg-white">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-textSecondary uppercase tracking-wider">Descrição</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-textSecondary uppercase tracking-wider">Valor</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-textSecondary uppercase tracking-wider">Categoria</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-textSecondary uppercase tracking-wider">Tipo</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-textSecondary uppercase tracking-wider">Data</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-borderColor">
-                    <% if (financas && financas.length > 0) { %>
-                        <% financas.forEach(function(financa) { %>
-                            <tr class="hover:bg-opacity-5 hover:bg-white transition duration-300 ease-in-out">
-                                <td class="px-6 py-4 whitespace-nowrap"><%= financa.descricao %></td>
-                                <td class="px-6 py-4 whitespace-nowrap <%= financa.tipo === 'receita' ? 'text-accentGreen' : 'text-accentRed' %>">
-                                    R$ <%= financa.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap"><%= financa.categoria %></td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= financa.tipo === 'receita' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
-                                        <%= financa.tipo %>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap"><%= new Date(financa.data).toLocaleDateString('pt-BR') %></td>
-                            </tr>
-                        <% }); %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-textSecondary">
-                                Nenhum lançamento encontrado
-                            </td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
+        <!-- Lançamentos em Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% if (financas && financas.length > 0) { %>
+                <% financas.forEach(function(financa) { %>
+                    <div class="bg-bgSecondary rounded-lg p-4 shadow-lg border border-borderColor">
+                        <h3 class="text-lg font-semibold mb-2"><%= financa.descricao %></h3>
+                        <p class="text-sm text-textSecondary mb-1">Categoria: 
+                            <span class="font-medium"><%= financa.categoria %></span>
+                        </p>
+                        <p class="text-sm text-textSecondary mb-1">Tipo: 
+                            <span class="font-medium <%= financa.tipo === 'receita' ? 'text-accentGreen' : 'text-accentRed' %>">
+                                <%= financa.tipo.charAt(0).toUpperCase() + financa.tipo.slice(1) %>
+                            </span>
+                        </p>
+                        <p class="text-sm text-textSecondary mb-1">Data: 
+                            <span class="font-medium"><%= new Date(financa.data).toLocaleDateString('pt-BR') %></span>
+                        </p>
+                        <p class="text-xl font-semibold <%= financa.tipo === 'receita' ? 'text-accentGreen' : 'text-accentRed' %>">
+                            R$ <%= financa.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %>
+                        </p>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-span-full text-center text-textSecondary">
+                    Nenhum lançamento encontrado
+                </div>
+            <% } %>
         </div>
     </div>
 </body>

@@ -11,16 +11,19 @@ class FinanceController {
       res.render('index', { 
         financas, 
         erro: req.query.erro,
-        sucesso: req.query.sucesso 
+        sucesso: req.query.sucesso,
+        email: res.locals.email // Adicionando o e-mail do usuário
       });
     } catch (error) {
       console.error('Erro ao listar lançamentos:', error);
       res.render('index', { 
         financas: [], 
-        erro: 'Erro ao listar lançamentos. Por favor, tente novamente.'
+        erro: 'Erro ao listar lançamentos. Por favor, tente novamente.',
+        email: res.locals.email // Garante que o e-mail ainda seja passado no caso de erro
       });
     }
   }
+  
 
   static async criar(req, res) {
     try {

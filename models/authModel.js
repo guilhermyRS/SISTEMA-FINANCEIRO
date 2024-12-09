@@ -1,3 +1,4 @@
+// models/authModel.js
 const supabase = require('../config/supabaseConfig');
 
 class AuthModel {
@@ -10,12 +11,13 @@ class AuthModel {
     return data;
   }
 
-  static async cadastrar(email, password) {
+  static async cadastrar(name, email, password) {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
     });
     if (error) throw error;
+
     return data;
   }
 
