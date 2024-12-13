@@ -8,27 +8,27 @@ class FinanceController {
   static async index(req, res) {
     try {
       const financas = await FinanceModel.listar(req.user.id);
-      res.render('index', { 
-        financas, 
+      res.render('index', {
+        financas,
         erro: req.query.erro,
         sucesso: req.query.sucesso,
         email: res.locals.email // Adicionando o e-mail do usuário
       });
     } catch (error) {
       console.error('Erro ao listar lançamentos:', error);
-      res.render('index', { 
-        financas: [], 
+      res.render('index', {
+        financas: [],
         erro: 'Erro ao listar lançamentos. Por favor, tente novamente.',
         email: res.locals.email // Garante que o e-mail ainda seja passado no caso de erro
       });
     }
   }
-  
+
 
   static async criar(req, res) {
     try {
       const { descricao, valor, categoria, tipo } = req.body;
-      
+
       if (!descricao || !valor || !categoria || !tipo) {
         return res.redirect('/?erro=' + encodeURIComponent('Preencha todos os campos'));
       }
@@ -38,14 +38,14 @@ class FinanceController {
         return res.redirect('/?erro=' + encodeURIComponent('Valor inválido'));
       }
 
-      await FinanceModel.criar({ 
-        descricao, 
-        valor: valorNumerico, 
-        categoria, 
+      await FinanceModel.criar({
+        descricao,
+        valor: valorNumerico,
+        categoria,
         tipo,
-        data: new Date() 
+        data: new Date()
       }, req.user.id);
-      
+
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento adicionado com sucesso'));
     } catch (error) {
       console.error('Erro ao adicionar lançamento:', error);
@@ -57,7 +57,7 @@ class FinanceController {
     try {
       const { id } = req.params;
       const { descricao, valor, categoria, tipo } = req.body;
-      
+
       if (!descricao || !valor || !categoria || !tipo) {
         return res.redirect('/?erro=' + encodeURIComponent('Preencha todos os campos'));
       }
@@ -67,13 +67,13 @@ class FinanceController {
         return res.redirect('/?erro=' + encodeURIComponent('Valor inválido'));
       }
 
-      await FinanceModel.atualizar(id, { 
-        descricao, 
-        valor: valorNumerico, 
-        categoria, 
-        tipo 
+      await FinanceModel.atualizar(id, {
+        descricao,
+        valor: valorNumerico,
+        categoria,
+        tipo
       }, req.user.id);
-      
+
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento atualizado com sucesso'));
     } catch (error) {
       console.error('Erro ao atualizar lançamento:', error);
@@ -85,7 +85,7 @@ class FinanceController {
     try {
       const { id } = req.params;
       await FinanceModel.deletar(id, req.user.id);
-      
+
       res.redirect('/?sucesso=' + encodeURIComponent('Lançamento removido com sucesso'));
     } catch (error) {
       console.error('Erro ao remover lançamento:', error);
@@ -119,26 +119,28 @@ class FinanceController {
       console.error('Erro ao carregar dashboard:', error.message);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao carregar dashboard'));
     }
-    
+
   }
 
   static async filtrar(req, res) {
     try {
       const { dataInicio, dataFim, tipo, categoria } = req.body;
-      const financasFiltradas = await FinanceModel.filtrar(req.session.user.id, dataInicio, dataFim, tipo, categoria);
+      const financasFiltradas = await FinanceModel.filtrar(req.user.id, dataInicio, dataFim, tipo, categoria);
 
       res.render('dashboard', {
         financas: financasFiltradas,
         filtros: { dataInicio, dataFim, tipo, categoria }
       });
     } catch (error) {
+      console.error('Erro ao filtrar lançamentos:', error);
       res.redirect('/relatorio?erro=' + encodeURIComponent('Erro ao filtrar lançamentos'));
+
     }
   }
 
   static async exportar(req, res) {
     try {
-      const financas = await FinanceModel.listar(req.session.user.id);
+      const financas = await FinanceModel.listar(req.user.id);
 
       const csvData = financas.map(f => ({
         ID: f.id,
@@ -155,7 +157,9 @@ class FinanceController {
       res.attachment('relatorio_financeiro.csv');
       res.send(csv);
     } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
       res.redirect('/relatorio?erro=' + encodeURIComponent('Erro ao exportar relatório'));
+
     }
   }
 }
