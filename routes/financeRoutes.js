@@ -12,6 +12,10 @@ router.get('/cadastro', AuthController.renderCadastro);
 router.post('/cadastro', AuthController.cadastrar);
 router.get('/logout', AuthController.logout);
 
+// Adicionando rotas para login com o Google
+router.get('/auth/google', AuthController.googleLogin); // Rota para redirecionar para Google
+router.get('/auth/google/callback', AuthController.googleCallback); // Rota para tratar o callback do Google
+
 // Finance routes (protected)
 router.get('/', isAuthenticated, FinanceController.index);
 router.post('/criar', isAuthenticated, FinanceController.criar);

@@ -1,8 +1,49 @@
 // controllers/authController.js
-const AuthModel = require('../models/authModel');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const supabase = require('../config/supabaseConfig');
+const AuthModel = require('../models/authModel');
+
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: 'https://sistema-financeiro-five.vercel.app/auth/google/callback',
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Verifique ou crie um usuário no seu banco de dados a partir do perfil do Google
+    const { user, session, error } = await AuthModel.googleLogin(profile);
+
+    if (error) {
+      throw error;
+    }
+
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
+}));
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 
 class AuthController {
+  static googleLogin(req, res) {
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res);
+  }
+
+  static googleCallback(req, res) {
+    passport.authenticate('google', {
+      failureRedirect: '/login',
+      successRedirect: '/',
+    })(req, res);
+  }
+
   static async login(req, res) {
     try {
       const { email, password } = req.body;

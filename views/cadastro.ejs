@@ -25,13 +25,6 @@
         <div class="absolute inset-0 bg-green-500 opacity-5 blur-xl rounded-3xl"></div>
         <div class="relative bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl border border-gray-700">
             <h1 class="text-3xl font-bold text-center text-gray-100 mb-8">Sistema Financeiro Avançado</h1>
-            
-            <% if (locals.error) { %>
-                <div class="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-md animate-[fadeOut_3s_ease-out]">
-                    <%= error %>
-                </div>
-            <% } %>
-
             <form action="/cadastro" method="POST" class="space-y-6">
                 <!-- Campo para o email -->
                 <div class="space-y-2">
@@ -47,7 +40,7 @@
                 </div>
                 
                 <!-- Campo para a senha -->
-                <div class="space-y-2">
+                <div class="space-y-2 relative">
                     <label for="password" class="text-sm font-medium text-gray-400">Senha</label>
                     <input 
                         type="password" 
@@ -57,10 +50,16 @@
                         required
                         class="w-full px-4 py-3 bg-[#121212] text-gray-200 placeholder-gray-500 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                     >
+                    <button type="button" class="absolute inset-y-0 right-3 flex items-center text-gray-400" onclick="togglePasswordVisibility('password', this)">
+                        <svg id="password-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-.05.13-.104.257-.161.381M17.657 17.657A9 9 0 014.343 4.343m14.314 0L4.343 17.657" />
+                        </svg>
+                    </button>
                 </div>
-            
+                
                 <!-- Campo para confirmar a senha -->
-                <div class="space-y-2">
+                <div class="space-y-2 relative">
                     <label for="confirm-password" class="text-sm font-medium text-gray-400">Confirme a Senha</label>
                     <input 
                         type="password" 
@@ -70,6 +69,12 @@
                         required
                         class="w-full px-4 py-3 bg-[#121212] text-gray-200 placeholder-gray-500 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                     >
+                    <button type="button" class="absolute inset-y-0 right-3 flex items-center text-gray-400" onclick="togglePasswordVisibility('confirm-password', this)">
+                        <svg id="confirm-password-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-.05.13-.104.257-.161.381M17.657 17.657A9 9 0 014.343 4.343m14.314 0L4.343 17.657" />
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- Botão de cadastro -->
@@ -87,15 +92,18 @@
     </div>
 
     <script>
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirm-password');
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('svg');
 
-        document.querySelector('form').addEventListener('submit', function(e) {
-            if (password.value !== confirmPassword.value) {
-                e.preventDefault();
-                alert('As senhas não coincidem!');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-.05.13-.104.257-.161.381M17.657 17.657A9 9 0 014.343 4.343m14.314 0L4.343 17.657" />';
+            } else {
+                input.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-.05.13-.104.257-.161.381M17.657 17.657A9 9 0 014.343 4.343m14.314 0L4.343 17.657" />';
             }
-        });
+        }
     </script>
 </body>
 </html>
