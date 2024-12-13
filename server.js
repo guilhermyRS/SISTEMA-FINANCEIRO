@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET || 'guiisguiisaguiisa',
   resave: false,
   saveUninitialized: true,
   cookie: { 

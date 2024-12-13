@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório Financeiro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
@@ -24,20 +25,83 @@
             }
         };
     </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1E1E1E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4CAF50;
+        }
+    </style>
 </head>
 <body class="bg-bgPrimary text-textPrimary font-sans">
     <div class="container mx-auto px-4 py-8">
         <!-- Cabeçalho -->
-        <div class="bg-bgSecondary rounded-lg shadow-lg p-6 mb-8 flex justify-between items-center">
-            <h1 class="text-3xl font-light"><i class="fas fa-chart-line mr-2"></i>Relatório Financeiro</h1>
+        <div class="bg-bgSecondary rounded-lg shadow-lg p-6 mb-8 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-light mb-4 md:mb-0">
+                <i class="fas fa-chart-line mr-2"></i>Relatório Financeiro
+            </h1>
             <a href="/" class="bg-accentGreen text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-green-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
                 <i class="fas fa-home mr-2"></i>Início
             </a>
         </div>
 
+        <!-- Resumo Financeiro -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-arrow-up text-accentGreen mr-2"></i>Total Receitas
+                </h3>
+                <p class="text-2xl font-bold text-accentGreen">R$ <%= totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></p>
+            </div>
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-arrow-down text-accentRed mr-2"></i>Total Despesas
+                </h3>
+                <p class="text-2xl font-bold text-accentRed">R$ <%= totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></p>
+            </div>
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-wallet <%= saldoTotal >= 0 ? 'text-accentGreen' : 'text-accentRed' %> mr-2"></i>Saldo Total
+                </h3>
+                <p class="text-2xl font-bold <%= saldoTotal >= 0 ? 'text-accentGreen' : 'text-accentRed' %>">
+                    R$ <%= saldoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %>
+                </p>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Gráfico de Receitas e Despesas por Categoria -->
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg col-span-1">
+                <h3 class="text-lg font-semibold mb-4">Receitas e Despesas por Categoria</h3>
+                <canvas id="categoriasChart" class="w-full h-64"></canvas>
+            </div>
+
+            <!-- Gráfico de Fluxo Financeiro -->
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg col-span-1">
+                <h3 class="text-lg font-semibold mb-4">Fluxo Financeiro Mensal</h3>
+                <canvas id="fluxoChart" class="w-full h-64"></canvas>
+            </div>
+
+            <!-- Gráfico de Pizza de Despesas -->
+            <div class="bg-bgSecondary rounded-lg p-6 shadow-lg col-span-1">
+                <h3 class="text-lg font-semibold mb-4">Distribuição de Despesas</h3>
+                <canvas id="despesasPieChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
         <!-- Filtros -->
         <div class="bg-bgSecondary rounded-lg shadow-lg p-6 mb-8">
-            <form action="/filtrar" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <form action="/filtrar" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-textSecondary mb-2"><i class="far fa-calendar-alt mr-2"></i>Data Início</label>
                     <input type="date" name="dataInicio" class="w-full bg-bgPrimary border border-borderColor text-textPrimary px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-accentBlue">
@@ -64,11 +128,11 @@
                         <option value="salario">Salário</option>
                     </select>
                 </div>
-                <div class="col-span-full flex justify-between mt-4">
+                <div class="col-span-full flex flex-col sm:flex-row justify-between mt-4 space-y-4 sm:space-y-0 sm:space-x-4">
                     <button type="submit" class="bg-accentBlue text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-blue-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
                         <i class="fas fa-search mr-2"></i>Filtrar
                     </button>
-                    <a href="/exportar" class="bg-accentGreen text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-green-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                    <a href="/exportar" class="bg-accentGreen text-white px-6 py-2 rounded-full font-semibold uppercase tracking-wide hover:bg-green-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg text-center">
                         <i class="fas fa-file-export mr-2"></i>Exportar CSV
                     </a>
                 </div>
@@ -76,7 +140,7 @@
         </div>
 
         <!-- Lançamentos em Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <% if (financas && financas.length > 0) { %>
                 <% financas.forEach(function(financa) { %>
                     <div class="bg-bgSecondary rounded-lg p-4 shadow-lg border border-borderColor">
@@ -104,5 +168,168 @@
             <% } %>
         </div>
     </div>
+
+    <script>
+        // Preparar dados para gráficos
+        const financas = JSON.parse('<%- JSON.stringify(financas) %>');
+
+        // Gráfico de Receitas e Despesas por Categoria (Bar Chart)
+        const categoriaData = financas.reduce((acc, financa) => {
+            const categoria = financa.categoria;
+            const valor = financa.valor;
+            const tipo = financa.tipo;
+
+            if (!acc[categoria]) {
+                acc[categoria] = { receita: 0, despesa: 0 };
+            }
+            acc[categoria][tipo] += valor;
+
+            return acc;
+        }, {});
+
+        const categoriasChart = new Chart(document.getElementById('categoriasChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(categoriaData),
+                datasets: [
+                    {
+                        label: 'Receitas',
+                        data: Object.values(categoriaData).map(cat => cat.receita),
+                        backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Despesas',
+                        data: Object.values(categoriaData).map(cat => cat.despesa),
+                        backgroundColor: 'rgba(244, 67, 54, 0.6)',
+                        borderColor: 'rgba(244, 67, 54, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#B0B0B0'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#B0B0B0'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#B0B0B0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Fluxo Financeiro (Line Chart)
+        const fluxoData = financas.reduce((acc, financa) => {
+            const mes = new Date(financa.data).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+            if (!acc[mes]) {
+                acc[mes] = { receita: 0, despesa: 0 };
+            }
+            acc[mes][financa.tipo] += financa.valor;
+            return acc;
+        }, {});
+
+        const fluxoChart = new Chart(document.getElementById('fluxoChart'), {
+            type: 'line',
+            data: {
+                labels: Object.keys(fluxoData),
+                datasets: [
+                    {
+                        label: 'Receitas',
+                        data: Object.values(fluxoData).map(m => m.receita),
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Despesas',
+                        data: Object.values(fluxoData).map(m => m.despesa),
+                        borderColor: 'rgba(244, 67, 54, 1)',
+                        backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#B0B0B0'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#B0B0B0'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#B0B0B0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Pizza de Despesas (Pie Chart)
+        const categoriasDespesasData = financas.reduce((acc, financa) => {
+            if (financa.tipo === 'despesa') {
+                const categoria = financa.categoria;
+                const valor = financa.valor;
+
+                if (!acc[categoria]) {
+                    acc[categoria] = 0;
+                }
+                acc[categoria] += valor;
+            }
+            return acc;
+        }, {});
+
+        const despesasPieChart = new Chart(document.getElementById('despesasPieChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(categoriasDespesasData),
+                datasets: [{
+                    data: Object.values(categoriasDespesasData),
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.6)',
+                        'rgba(244, 67, 54, 0.6)',
+                        'rgba(33, 150, 243, 0.6)',
+                        'rgba(255, 193, 7, 0.6)'
+                    ],
+                    borderColor: '#333333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#B0B0B0'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
