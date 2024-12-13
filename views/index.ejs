@@ -245,7 +245,7 @@
                             <h2 class="text-2xl font-semibold mb-6 text-center text-gray-200">
                                 <i class="fas fa-list-ul mr-2"></i>Lançamentos
                             </h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <% financas.forEach(function(financa) { %>
                                     <div class="card <%= financa.tipo === 'receita' ? 'card-receita' : 'card-despesa' %> rounded-xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl"
                                         onclick="openModal('visualizarModal<%= financa.id %>')">
@@ -562,6 +562,8 @@
                 message.style.display = 'none';
             });
         }, 5000);
+
+        
     </script>
 </body>
 

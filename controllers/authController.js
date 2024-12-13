@@ -3,7 +3,6 @@ const AuthModel = require('../models/authModel');
 const supabase = require('../config/supabaseConfig');
 
 class AuthController {
-
   static async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -31,19 +30,11 @@ class AuthController {
 
   static async cadastrar(req, res) {
     try {
-      const { name, email, password } = req.body;
-      const { user, session, error } = await AuthModel.cadastrar(name, email, password);
+      const { email, password } = req.body;
+      const { user, session, error } = await AuthModel.cadastrar(email, password);
 
       if (error) {
         throw error;
-      }
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { name: name },
-      });
-
-      if (updateError) {
-        throw new Error('Erro ao atualizar o nome no usuário');
       }
 
       res.render('login', { success: 'Cadastro realizado com sucesso. Por favor, verifique seu email para autenticação.' });

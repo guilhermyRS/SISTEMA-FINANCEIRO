@@ -95,7 +95,7 @@ class FinanceController {
 
   static async dashboard(req, res) {
     try {
-      const financas = await FinanceModel.listar(req.session.user.id);
+      const financas = await FinanceModel.listar(req.user.id);
 
       const totalReceitas = financas
         .filter(f => f.tipo === 'receita')
@@ -116,8 +116,10 @@ class FinanceController {
         sucesso: req.query.sucesso
       });
     } catch (error) {
+      console.error('Erro ao carregar dashboard:', error.message);
       res.redirect('/?erro=' + encodeURIComponent('Erro ao carregar dashboard'));
     }
+    
   }
 
   static async filtrar(req, res) {

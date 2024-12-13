@@ -11,7 +11,7 @@ class AuthModel {
     return data;
   }
 
-  static async cadastrar(name, email, password) {
+  static async cadastrar(email, password) {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
